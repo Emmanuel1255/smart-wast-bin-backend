@@ -1,0 +1,1368 @@
+{
+    "info": {
+      "name": "Smart Waste Management API",
+      "description": "Complete API collection for Smart Waste Bin Management System",
+      "version": "1.0.0",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+      "type": "bearer",
+      "bearer": [
+        {
+          "key": "token",
+          "value": "{{accessToken}}",
+          "type": "string"
+        }
+      ]
+    },
+    "event": [
+      {
+        "listen": "prerequest",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            ""
+          ]
+        }
+      },
+      {
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            ""
+          ]
+        }
+      }
+    ],
+    "variable": [
+      {
+        "key": "baseUrl",
+        "value": "http://localhost:3000",
+        "type": "string"
+      },
+      {
+        "key": "accessToken",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "refreshToken",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "userId",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "driverId",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "binId",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "truckId",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "pickupId",
+        "value": "",
+        "type": "string"
+      }
+    ],
+    "item": [
+      {
+        "name": "🔐 Authentication",
+        "item": [
+          {
+            "name": "Register User",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 201) {",
+                    "    const response = pm.response.json();",
+                    "    if (response.data && response.data.accessToken) {",
+                    "        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+                    "        pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+                    "        pm.collectionVariables.set('userId', response.data.user.id);",
+                    "    }",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"User123!\",\n  \"fullName\": \"John Doe\",\n  \"phone\": \"+1234567890\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/register",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "register"]
+              }
+            }
+          },
+          {
+            "name": "Login",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 200) {",
+                    "    const response = pm.response.json();",
+                    "    if (response.data && response.data.accessToken) {",
+                    "        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+                    "        pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+                    "        pm.collectionVariables.set('userId', response.data.user.id);",
+                    "    }",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"admin@smartwaste.com\",\n  \"password\": \"admin123\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/login",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "login"]
+              }
+            }
+          },
+          {
+            "name": "Refresh Token",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/refresh",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "refresh"]
+              }
+            }
+          },
+          {
+            "name": "Get Profile",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/profile",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "profile"]
+              }
+            }
+          },
+          {
+            "name": "Update Profile",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"fullName\": \"John Updated Doe\",\n  \"phone\": \"+1234567891\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/profile",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "profile"]
+              }
+            }
+          },
+          {
+            "name": "Change Password",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"currentPassword\": \"User123!\",\n  \"newPassword\": \"NewUser123!\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/change-password",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "change-password"]
+              }
+            }
+          },
+          {
+            "name": "Logout",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/logout",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "logout"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "🗑️ Bin Management",
+        "item": [
+          {
+            "name": "Get All Bins",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/bins?page=1&limit=10",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "bins"],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  },
+                  {
+                    "key": "status",
+                    "value": "FULL",
+                    "disabled": true
+                  },
+                  {
+                    "key": "location",
+                    "value": "Aberdeen",
+                    "disabled": true
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "Create Bin",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 201) {",
+                    "    const response = pm.response.json();",
+                    "    if (response.data && response.data.id) {",
+                    "        pm.collectionVariables.set('binId', response.data.id);",
+                    "    }",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"binCode\": \"BC2001\",\n  \"location\": \"FBC Computer Science Department\",\n  \"latitude\": 8.4850,\n  \"longitude\": -13.2310,\n  \"capacity\": 150,\n  \"binType\": \"recyclable\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/bins",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "bins"]
+              }
+            }
+          },
+          {
+            "name": "Get Bin by ID",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/bins/{{binId}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "bins", "{{binId}}"]
+              }
+            }
+          },
+          {
+            "name": "Update Bin",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"location\": \"Updated Location\",\n  \"capacity\": 200\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/bins/{{binId}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "bins", "{{binId}}"]
+              }
+            }
+          },
+          {
+            "name": "Update Bin Sensor Data (IoT)",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"fillLevel\": 75.5,\n  \"weight\": 12.3,\n  \"temperature\": 28.5,\n  \"humidity\": 65.2,\n  \"batteryLevel\": 85.0,\n  \"signalStrength\": -45\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/bins/sensor/BC2001",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "bins", "sensor", "BC2001"]
+              },
+              "description": "This endpoint doesn't require authentication (for IoT devices)"
+            }
+          },
+          {
+            "name": "Get Bin Statistics",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/bins/stats",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "bins", "stats"]
+              }
+            }
+          },
+          {
+            "name": "Get Nearby Bins",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/bins/nearby?latitude=8.4840&longitude=-13.2299&radius=2",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "bins", "nearby"],
+                "query": [
+                  {
+                    "key": "latitude",
+                    "value": "8.4840"
+                  },
+                  {
+                    "key": "longitude",
+                    "value": "-13.2299"
+                  },
+                  {
+                    "key": "radius",
+                    "value": "2"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "Get Bins by Status",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/bins/status/FULL",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "bins", "status", "FULL"]
+              }
+            }
+          },
+          {
+            "name": "Get Bin History",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/bins/{{binId}}/history?startDate=2024-01-01&endDate=2024-01-31",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "bins", "{{binId}}", "history"],
+                "query": [
+                  {
+                    "key": "startDate",
+                    "value": "2024-01-01"
+                  },
+                  {
+                    "key": "endDate",
+                    "value": "2024-01-31"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "Mark Bin as Emptied",
+            "request": {
+              "method": "PUT",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/bins/{{binId}}/empty",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "bins", "{{binId}}", "empty"]
+              }
+            }
+          },
+          {
+            "name": "Delete Bin",
+            "request": {
+              "method": "DELETE",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/bins/{{binId}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "bins", "{{binId}}"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "🚚 Truck Management",
+        "item": [
+          {
+            "name": "Get All Trucks",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/trucks?page=1&limit=10",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "trucks"],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "Create Truck",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 201) {",
+                    "    const response = pm.response.json();",
+                    "    if (response.data && response.data.id) {",
+                    "        pm.collectionVariables.set('truckId', response.data.id);",
+                    "    }",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"licensePlate\": \"SW-002\",\n  \"model\": \"Volvo FE\",\n  \"capacity\": 8000,\n  \"fuelType\": \"Diesel\",\n  \"year\": 2022\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/trucks",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "trucks"]
+              }
+            }
+          },
+          {
+            "name": "Get Available Trucks",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/trucks/available",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "trucks", "available"]
+              }
+            }
+          },
+          {
+            "name": "Get Truck by ID",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/trucks/{{truckId}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "trucks", "{{truckId}}"]
+              }
+            }
+          },
+          {
+            "name": "Update Truck",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"model\": \"Updated Model\",\n  \"capacity\": 9000\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/trucks/{{truckId}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "trucks", "{{truckId}}"]
+              }
+            }
+          },
+          {
+            "name": "Delete Truck",
+            "request": {
+              "method": "DELETE",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/trucks/{{truckId}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "trucks", "{{truckId}}"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "🚛 Driver Management",
+        "item": [
+          {
+            "name": "Get All Drivers",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/drivers?page=1&limit=10&status=ONLINE",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "drivers"],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  },
+                  {
+                    "key": "status",
+                    "value": "ONLINE",
+                    "disabled": true
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "Create Driver",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 201) {",
+                    "    const response = pm.response.json();",
+                    "    if (response.data && response.data.id) {",
+                    "        pm.collectionVariables.set('driverId', response.data.id);",
+                    "    }",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"newdriver@smartwaste.com\",\n  \"password\": \"Driver123!\",\n  \"fullName\": \"John Driver\",\n  \"phone\": \"+23276111222\",\n  \"driverLicense\": \"DL789012\",\n  \"truckId\": \"{{truckId}}\",\n  \"shiftStart\": \"08:00\",\n  \"shiftEnd\": \"17:00\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/drivers",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "drivers"]
+              }
+            }
+          },
+          {
+            "name": "Get Available Drivers",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/drivers/available",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "drivers", "available"]
+              }
+            }
+          },
+          {
+            "name": "Get Nearby Drivers",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/drivers/nearby?latitude=8.4840&longitude=-13.2299&radius=5",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "drivers", "nearby"],
+                "query": [
+                  {
+                    "key": "latitude",
+                    "value": "8.4840"
+                  },
+                  {
+                    "key": "longitude",
+                    "value": "-13.2299"
+                  },
+                  {
+                    "key": "radius",
+                    "value": "5"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "Update Driver Status",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"status\": \"ONLINE\",\n  \"currentLatitude\": 8.4840,\n  \"currentLongitude\": -13.2299\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/drivers/{{driverId}}/status",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "drivers", "{{driverId}}", "status"]
+              }
+            }
+          },
+          {
+            "name": "Update Driver Location",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"latitude\": 8.4850,\n  \"longitude\": -13.2310\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/drivers/{{driverId}}/location",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "drivers", "{{driverId}}", "location"]
+              }
+            }
+          },
+          {
+            "name": "Get Driver Performance",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/drivers/{{driverId}}/performance",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "drivers", "{{driverId}}", "performance"]
+              }
+            }
+          },
+          {
+            "name": "Get Driver Statistics",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/drivers/stats",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "drivers", "stats"]
+              }
+            }
+          },
+          {
+            "name": "Get My Driver Profile",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/drivers/me",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "drivers", "me"]
+              }
+            }
+          },
+          {
+            "name": "Update Driver Details",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"truckId\": \"{{truckId}}\",\n  \"shiftStart\": \"07:00\",\n  \"shiftEnd\": \"16:00\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/drivers/{{driverId}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "drivers", "{{driverId}}"]
+              }
+            }
+          },
+          {
+            "name": "Delete Driver",
+            "request": {
+              "method": "DELETE",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/drivers/{{driverId}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "drivers", "{{driverId}}"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "📋 Pickup Management",
+        "item": [
+          {
+            "name": "Get All Pickups",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups?page=1&limit=10&status=SCHEDULED",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups"],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  },
+                  {
+                    "key": "status",
+                    "value": "SCHEDULED",
+                    "disabled": true
+                  },
+                  {
+                    "key": "priority",
+                    "value": "HIGH",
+                    "disabled": true
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "Create Pickup Request",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 201) {",
+                    "    const response = pm.response.json();",
+                    "    if (response.data && response.data.id) {",
+                    "        pm.collectionVariables.set('pickupId', response.data.id);",
+                    "    }",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"binId\": \"{{binId}}\",\n  \"priority\": \"HIGH\",\n  \"notes\": \"Bin is overflowing\",\n  \"pickupType\": \"ON_DEMAND\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups"]
+              }
+            }
+          },
+          {
+            "name": "Get Pickup by ID",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups/{{pickupId}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups", "{{pickupId}}"]
+              }
+            }
+          },
+          {
+            "name": "Update Pickup Status",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"status\": \"IN_PROGRESS\",\n  \"notes\": \"On my way to pickup location\",\n  \"location\": {\n    \"latitude\": 8.4840,\n    \"longitude\": -13.2299\n  }\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups/{{pickupId}}/status",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups", "{{pickupId}}", "status"]
+              }
+            }
+          },
+          {
+            "name": "Assign Driver to Pickup",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"driverId\": \"{{driverId}}\",\n  \"estimatedDuration\": 30,\n  \"scheduledAt\": \"2024-01-15T14:00:00Z\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups/{{pickupId}}/assign",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups", "{{pickupId}}", "assign"]
+              }
+            }
+          },
+          {
+            "name": "Get My Upcoming Pickups (Driver)",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups/my-upcoming",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups", "my-upcoming"]
+              }
+            }
+          },
+          {
+            "name": "Get Optimized Route (Driver)",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups/my-route",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups", "my-route"]
+              }
+            }
+          },
+          {
+            "name": "Optimize Route for Multiple Pickups",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"driverId\": \"{{driverId}}\",\n  \"pickupIds\": [\"{{pickupId}}\", \"pickup2-uuid\", \"pickup3-uuid\"],\n  \"startLocation\": {\n    \"latitude\": 8.4840,\n    \"longitude\": -13.2299\n  }\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups/optimize-route",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups", "optimize-route"]
+              }
+            }
+          },
+          {
+            "name": "Cancel Pickup",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"reason\": \"Bin was already emptied by another service\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups/{{pickupId}}/cancel",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups", "{{pickupId}}", "cancel"]
+              }
+            }
+          },
+          {
+            "name": "Get Pickup Statistics",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups/stats",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups", "stats"]
+              }
+            }
+          },
+          {
+            "name": "Get Today's Pickups",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups/today",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups", "today"]
+              }
+            }
+          },
+          {
+            "name": "Get Pickups by Priority",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups/priority/URGENT",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups", "priority", "URGENT"]
+              }
+            }
+          },
+          {
+            "name": "Get Pickups by Status",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups/status/COMPLETED",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups", "status", "COMPLETED"]
+              }
+            }
+          },
+          {
+            "name": "Update Pickup Details",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"priority\": \"URGENT\",\n  \"notes\": \"Updated: Customer reported bin is full and smelling\",\n  \"scheduledAt\": \"2024-01-15T09:00:00Z\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/pickups/{{pickupId}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "pickups", "{{pickupId}}"]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "📊 Analytics & Reports",
+        "item": [
+          {
+            "name": "Get Dashboard Metrics",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/analytics/dashboard?startDate=2024-01-01&endDate=2024-01-31",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "analytics", "dashboard"],
+                "query": [
+                  {
+                    "key": "startDate",
+                    "value": "2024-01-01"
+                  },
+                  {
+                    "key": "endDate",
+                    "value": "2024-01-31"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "Get Overview Metrics",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/analytics/overview",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "analytics", "overview"]
+              }
+            }
+          },
+          {
+            "name": "Get Bin Analytics",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/analytics/bins",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "analytics", "bins"]
+              }
+            }
+          },
+          {
+            "name": "Get Driver Analytics",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/analytics/drivers",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "analytics", "drivers"]
+              }
+            }
+          },
+          {
+            "name": "Get Performance Metrics",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/analytics/performance",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "analytics", "performance"]
+              }
+            }
+          },
+          {
+            "name": "Get Trend Analysis",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/analytics/trends?granularity=DAY",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "analytics", "trends"],
+                "query": [
+                  {
+                    "key": "granularity",
+                    "value": "DAY"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "🏥 System Health",
+        "item": [
+          {
+            "name": "Health Check",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/health",
+                "host": ["{{baseUrl}}"],
+                "path": ["health"]
+              },
+              "description": "Check system health - no authentication required"
+            }
+          }
+        ]
+      },
+      {
+        "name": "🧪 Test Data Setup",
+        "item": [
+          {
+            "name": "Setup Test Admin",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 200) {",
+                    "    const response = pm.response.json();",
+                    "    if (response.data && response.data.accessToken) {",
+                    "        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+                    "        pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+                    "        pm.collectionVariables.set('userId', response.data.user.id);",
+                    "        console.log('✅ Admin login successful');",
+                    "        console.log('User ID:', response.data.user.id);",
+                    "        console.log('Role:', response.data.user.role);",
+                    "    }",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"admin@smartwaste.com\",\n  \"password\": \"admin123\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/login",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "login"]
+              },
+              "description": "Login as admin to get admin token"
+            }
+          },
+          {
+            "name": "Setup Test Driver",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 200) {",
+                    "    const response = pm.response.json();",
+                    "    if (response.data && response.data.accessToken) {",
+                    "        pm.collectionVariables.set('driverToken', response.data.accessToken);",
+                    "        console.log('✅ Driver login successful');",
+                    "        console.log('User ID:', response.data.user.id);",
+                    "        console.log('Role:', response.data.user.role);",
+                    "    }",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"driver@smartwaste.com\",\n  \"password\": \"driver123\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/login",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "login"]
+              },
+              "description": "Login as driver to get driver token"
+            }
+          },
+          {
+            "name": "Setup Test User",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 200) {",
+                    "    const response = pm.response.json();",
+                    "    if (response.data && response.data.accessToken) {",
+                    "        pm.collectionVariables.set('userToken', response.data.accessToken);",
+                    "        console.log('✅ User login successful');",
+                    "        console.log('User ID:', response.data.user.id);",
+                    "        console.log('Role:', response.data.user.role);",
+                    "    }",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"user@smartwaste.com\",\n  \"password\": \"user123\"\n}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/login",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "login"]
+              },
+              "description": "Login as regular user to get user token"
+            }
+          }
+        ]
+      }
+    ],
+    "event": [
+      {
+        "listen": "prerequest",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "// Auto-refresh token if expired",
+            "const accessToken = pm.collectionVariables.get('accessToken');",
+            "const refreshToken = pm.collectionVariables.get('refreshToken');",
+            "",
+            "if (!accessToken && refreshToken) {",
+            "    console.log('⚠️ No access token, attempting refresh...');",
+            "    // Could implement auto-refresh logic here",
+            "}"
+          ]
+        }
+      },
+      {
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "// Global test script to handle common responses",
+            "if (pm.response.code === 401) {",
+            "    console.log('❌ Authentication failed - token may be expired');",
+            "} else if (pm.response.code === 403) {",
+            "    console.log('❌ Access denied - insufficient permissions');",
+            "} else if (pm.response.code >= 200 && pm.response.code < 300) {",
+            "    console.log('✅ Request successful');",
+            "} else if (pm.response.code >= 400) {",
+            "    console.log('❌ Request failed with status:', pm.response.code);",
+            "    if (pm.response.json && pm.response.json().error) {",
+            "        console.log('Error:', pm.response.json().error);",
+            "    }",
+            "}"
+          ]
+        }
+      }
+    ]
+  }

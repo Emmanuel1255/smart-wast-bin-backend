@@ -1,0 +1,237 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  DRIVER
+  USER
+}
+
+enum BinStatus {
+  EMPTY
+  LOW
+  MEDIUM
+  HIGH
+  FULL
+  MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+enum DriverStatus {
+  ONLINE
+  OFFLINE
+  BUSY
+  ON_BREAK
+}
+
+enum RouteStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PickupStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PickupPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum PickupType {
+  SCHEDULED
+  ON_DEMAND
+  EMERGENCY
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  fullName      String   @map("full_name")
+  phone         String?
+  role          UserRole @default(USER)
+  isActive      Boolean  @default(true) @map("is_active")
+  emailVerified Boolean  @default(false) @map("email_verified")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  bins          Bin[]
+  driver        Driver?
+  pickupsCreated Pickup[] @relation("PickupCreatedBy")
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model Bin {
+  id           String    @id @default(uuid())
+  binCode      String    @unique @map("bin_code")
+  location     String
+  latitude     Decimal   @db.Decimal(10, 8)
+  longitude    Decimal   @db.Decimal(11, 8)
+  capacity     Int       @default(100)
+  currentLevel Decimal   @default(0) @map("current_level") @db.Decimal(5, 2)
+  status       BinStatus @default(EMPTY)
+  binType      String    @default("general") @map("bin_type")
+  lastEmptied  DateTime? @map("last_emptied")
+  userId       String?   @map("user_id")
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user         User?           @relation(fields: [userId], references: [id])
+  sensorData   BinSensorData[]
+  pickups      Pickup[]
+  routeStops   RouteStop[]
+
+  @@map("bins")
+}
+
+model Driver {
+  id               String       @id @default(uuid())
+  userId           String       @unique @map("user_id")
+  driverLicense    String       @map("driver_license")
+  truckId          String?      @map("truck_id")
+  status           DriverStatus @default(OFFLINE)
+  currentLatitude  Decimal?     @map("current_latitude") @db.Decimal(10, 8)
+  currentLongitude Decimal?     @map("current_longitude") @db.Decimal(11, 8)
+  shiftStart       String?      @map("shift_start") // Time as string HH:MM
+  shiftEnd         String?      @map("shift_end")   // Time as string HH:MM
+  isAvailable      Boolean      @default(true) @map("is_available")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  truck   Truck?  @relation(fields: [truckId], references: [id])
+  routes  Route[]
+  pickups Pickup[]
+
+  @@map("drivers")
+}
+
+model Truck {
+  id           String   @id @default(uuid())
+  licensePlate String   @unique @map("license_plate")
+  model        String?
+  capacity     Int?     @default(1000) // in liters or kg
+  fuelType     String?  // <-- Add this line
+  year         Int?     @default(2024) // <-- Add this line
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  drivers Driver[]
+
+  @@map("trucks")
+}
+
+model BinSensorData {
+  id             String   @id @default(uuid())
+  binId          String   @map("bin_id")
+  fillLevel      Decimal  @map("fill_level") @db.Decimal(5, 2)
+  weight         Decimal? @db.Decimal(8, 2)
+  temperature    Decimal? @db.Decimal(5, 2)
+  humidity       Decimal? @db.Decimal(5, 2)
+  batteryLevel   Decimal? @map("battery_level") @db.Decimal(5, 2)
+  signalStrength Int?     @map("signal_strength")
+  timestamp      DateTime @default(now())
+
+  // Relations
+  bin Bin @relation(fields: [binId], references: [id], onDelete: Cascade)
+
+  @@map("bin_sensor_data")
+}
+
+model Route {
+  id                String      @id @default(uuid())
+  driverId          String      @map("driver_id")
+  routeName         String?     @map("route_name")
+  totalDistance     Decimal?    @map("total_distance") @db.Decimal(8, 2)
+  estimatedDuration Int?        @map("estimated_duration") // in minutes
+  status            RouteStatus @default(PLANNED)
+  createdAt         DateTime    @default(now()) @map("created_at")
+  startedAt         DateTime?   @map("started_at")
+  completedAt       DateTime?   @map("completed_at")
+
+  // Relations
+  driver Driver      @relation(fields: [driverId], references: [id])
+  stops  RouteStop[]
+
+  @@map("routes")
+}
+
+model RouteStop {
+  id              String      @id @default(uuid())
+  routeId         String      @map("route_id")
+  binId           String      @map("bin_id")
+  stopOrder       Int         @map("stop_order")
+  estimatedArrival DateTime?  @map("estimated_arrival")
+  actualArrival   DateTime?   @map("actual_arrival")
+  status          PickupStatus @default(SCHEDULED)
+  notes           String?
+
+  // Relations
+  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  bin   Bin   @relation(fields: [binId], references: [id])
+
+  @@map("route_stops")
+}
+
+model Pickup {
+  id          String       @id @default(uuid())
+  binId       String       @map("bin_id")
+  driverId    String?      @map("driver_id")
+  createdById String       @map("created_by_id")
+  status      PickupStatus @default(SCHEDULED)
+  
+  // Add these new fields
+  priority       PickupPriority @default(MEDIUM)
+  pickupType     PickupType     @default(ON_DEMAND) @map("pickup_type")
+  estimatedDuration Int?        @map("estimated_duration") // in minutes
+  
+  scheduledAt DateTime?    @map("scheduled_at")
+  startedAt   DateTime?    @map("started_at")
+  completedAt DateTime?    @map("completed_at")
+  notes       String?
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  bin       Bin    @relation(fields: [binId], references: [id])
+  driver    Driver? @relation(fields: [driverId], references: [id])
+  createdBy User   @relation("PickupCreatedBy", fields: [createdById], references: [id])
+
+  @@map("pickups")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Add user relation
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
