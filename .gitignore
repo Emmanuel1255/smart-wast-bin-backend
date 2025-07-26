@@ -204,6 +204,8 @@ cdk.out/
 docs/generated/
 api-docs/
 
+postman.json
+
 # Large Media Files
 *.mp4
 *.avi

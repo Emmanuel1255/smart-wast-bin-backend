@@ -56,36 +56,84 @@ export class RouteOptimizationService {
         longitude: driver.currentLongitude ? Number(driver.currentLongitude) : -13.2299
       };
 
-      // Optimize route using nearest neighbor algorithm
-      const optimizedPickups = this.nearestNeighborOptimization(
-        startLocation,
-        pickups.map(pickup => ({
-          pickupId: pickup.id,
-          bin: pickup.bin,
-          latitude: Number(pickup.bin.latitude),
-          longitude: Number(pickup.bin.longitude)
-        }))
-      );
+      // Integrate Google Maps Directions API for route optimization
+      const { GoogleMapsService } = await import('./googleMapsService');
+      const googleMapsService = new GoogleMapsService();
 
-      // Calculate total distance and estimated duration
+      // Prepare waypoints
+      const waypoints = pickups.map((pickup: any) => ({
+        latitude: Number(pickup.bin.latitude),
+        longitude: Number(pickup.bin.longitude)
+      }));
+
+      let routeResponse;
+      let optimizedPickups;
       let totalDistance = 0;
-      let currentLocation = startLocation;
+      let estimatedDuration = 0;
+      let useGoogleMaps = true;
 
-      for (const pickup of optimizedPickups) {
-        const distance = this.calculateDistance(
-          currentLocation.latitude,
-          currentLocation.longitude,
-          pickup.latitude,
-          pickup.longitude
+      try {
+        // Use Google Maps for route optimization
+        if (waypoints.length > 1) {
+          routeResponse = await googleMapsService.getRoute({
+            origin: startLocation,
+            destination: waypoints[waypoints.length - 1],
+            waypoints: waypoints.slice(0, -1)
+          });
+
+          // Google returns the optimized waypoint order if optimize:true is used
+          // Map the order back to pickups
+          const optimizedOrder = routeResponse.steps?.map((step: any, idx: number) => idx) || waypoints.map((_: any, idx: number) => idx);
+          optimizedPickups = optimizedOrder.map((i: number) => ({
+            pickupId: pickups[i].id,
+            bin: pickups[i].bin,
+            latitude: Number(pickups[i].bin.latitude),
+            longitude: Number(pickups[i].bin.longitude)
+          }));
+
+          totalDistance = routeResponse.distance;
+          estimatedDuration = Math.round(routeResponse.duration / 60 + pickups.length * 5); // duration in min + 5 min per stop
+        } else {
+          // Only one pickup, no optimization needed
+          optimizedPickups = pickups.map((pickup: any) => ({
+            pickupId: pickup.id,
+            bin: pickup.bin,
+            latitude: Number(pickup.bin.latitude),
+            longitude: Number(pickup.bin.longitude)
+          }));
+          // Use Haversine as backup for single
+          totalDistance = googleMapsService.calculateHaversineDistance(startLocation, waypoints[0]);
+          estimatedDuration = Math.round((totalDistance / 30) * 60 + 5); // 30 km/h + 5 min
+        }
+      } catch (err) {
+        // Fallback to nearest neighbor if Google Maps fails
+        useGoogleMaps = false;
+        optimizedPickups = this.nearestNeighborOptimization(
+          startLocation,
+          pickups.map((pickup: any) => ({
+            pickupId: pickup.id,
+            bin: pickup.bin,
+            latitude: Number(pickup.bin.latitude),
+            longitude: Number(pickup.bin.longitude)
+          }))
         );
-        totalDistance += distance;
-        currentLocation = { latitude: pickup.latitude, longitude: pickup.longitude };
+        // Calculate total distance and estimated duration
+        totalDistance = 0;
+        let currentLocation = startLocation;
+        for (const pickup of optimizedPickups) {
+          const distance = this.calculateDistance(
+            currentLocation.latitude,
+            currentLocation.longitude,
+            pickup.latitude,
+            pickup.longitude
+          );
+          totalDistance += distance;
+          currentLocation = { latitude: pickup.latitude, longitude: pickup.longitude };
+        }
+        const travelTimeMinutes = (totalDistance / 30) * 60;
+        const pickupTimeMinutes = optimizedPickups.length * 5;
+        estimatedDuration = Math.round(travelTimeMinutes + pickupTimeMinutes);
       }
-
-      // Estimate 5 minutes per pickup + travel time (assuming 30 km/h average speed)
-      const travelTimeMinutes = (totalDistance / 30) * 60;
-      const pickupTimeMinutes = optimizedPickups.length * 5;
-      const estimatedDuration = Math.round(travelTimeMinutes + pickupTimeMinutes);
 
       // Create route record
       const route = await prisma.route.create({
