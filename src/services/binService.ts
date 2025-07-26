@@ -384,20 +384,22 @@ export class BinService {
    */
   async getNearbyBins(query: NearbyBinsQuery): Promise<BinResponse[]> {
     try {
-      const radius = query.radius || 5; // Default 5km
-      const limit = query.limit || 20;
+      const radius = Number(query.radius) || 5; // Default 5km
+      const limit = Number(query.limit) || 20;
+      const latitude = Number(query.latitude);
+      const longitude = Number(query.longitude);
 
       // Simple distance calculation (for more accurate results, use PostGIS)
       const bins = await prisma.bin.findMany({
         where: {
           isActive: true,
           latitude: {
-            gte: query.latitude - (radius / 111),
-            lte: query.latitude + (radius / 111)
+            gte: latitude - (radius / 111),
+            lte: latitude + (radius / 111)
           },
           longitude: {
-            gte: query.longitude - (radius / (111 * Math.cos(query.latitude * Math.PI / 180))),
-            lte: query.longitude + (radius / (111 * Math.cos(query.latitude * Math.PI / 180)))
+            gte: longitude - (radius / (111 * Math.cos(latitude * Math.PI / 180))),
+            lte: longitude + (radius / (111 * Math.cos(latitude * Math.PI / 180)))
           }
         },
         include: {
