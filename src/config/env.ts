@@ -15,6 +15,7 @@ interface EnvConfig {
   MQTT_BROKER_URL: string;
   MQTT_USERNAME: string;
   MQTT_PASSWORD: string;
+  GOOGLE_MAPS_API_KEY: string; 
 }
 
 function validateEnv(): EnvConfig {
@@ -23,7 +24,8 @@ function validateEnv(): EnvConfig {
     'JWT_SECRET',
     'JWT_REFRESH_SECRET',
     'REDIS_URL',
-    'MQTT_BROKER_URL'
+    'MQTT_BROKER_URL',
+    'GOOGLE_MAPS_API_KEY'  
   ];
 
   for (const envVar of requiredEnvVars) {
@@ -43,7 +45,8 @@ function validateEnv(): EnvConfig {
     REDIS_URL: process.env.REDIS_URL!,
     MQTT_BROKER_URL: process.env.MQTT_BROKER_URL!,
     MQTT_USERNAME: process.env.MQTT_USERNAME || '',
-    MQTT_PASSWORD: process.env.MQTT_PASSWORD || ''
+    MQTT_PASSWORD: process.env.MQTT_PASSWORD || '',
+    GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY! 
   };
 }
 

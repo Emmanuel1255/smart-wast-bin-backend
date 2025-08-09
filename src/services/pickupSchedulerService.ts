@@ -51,9 +51,12 @@ export class PickupSchedulerService {
         try {
           // Determine priority based on fill level
           let priority = 'HIGH';
-          if (bin.currentLevel >= 95) {
+          const currentLevel = typeof bin.currentLevel === 'object' && typeof bin.currentLevel.toNumber === 'function'
+            ? bin.currentLevel.toNumber()
+            : Number(bin.currentLevel);
+          if (currentLevel >= 95) {
             priority = 'URGENT';
-          } else if (bin.currentLevel >= 90) {
+          } else if (currentLevel >= 90) {
             priority = 'HIGH';
           }
 

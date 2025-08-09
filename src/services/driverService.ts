@@ -496,15 +496,20 @@ export class DriverService {
         whereClause.status = DriverStatus.ONLINE; // Default to online drivers
       }
 
+      // Parse latitude and longitude as numbers to avoid string concatenation errors
+      const latitude = typeof query.latitude === 'string' ? parseFloat(query.latitude) : query.latitude;
+      const longitude = typeof query.longitude === 'string' ? parseFloat(query.longitude) : query.longitude;
+
       // Simple distance calculation (for more accurate results, use PostGIS)
       whereClause.currentLatitude = {
-        gte: query.latitude - (radius / 111),
-        lte: query.latitude + (radius / 111)
+        gte: latitude - (radius / 111),
+        lte: latitude + (radius / 111)
       };
       whereClause.currentLongitude = {
-        gte: query.longitude - (radius / (111 * Math.cos(query.latitude * Math.PI / 180))),
-        lte: query.longitude + (radius / (111 * Math.cos(query.latitude * Math.PI / 180)))
+        gte: longitude - (radius / (111 * Math.cos(latitude * Math.PI / 180))),
+        lte: longitude + (radius / (111 * Math.cos(latitude * Math.PI / 180)))
       };
+
 
       const drivers = await prisma.driver.findMany({
         where: whereClause,
