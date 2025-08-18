@@ -50,23 +50,31 @@ router.get(
 );
 
 router.get(
-  '/nearby', 
-  nearbyBinsValidation, 
-  validateRequest, 
-  binController.getNearbyBins
-);
-
-router.get(
   '/search', 
   binController.searchBins
 );
 
 router.get(
+  '/status/counts',
+  binController.getBinStatusCounts
+);
+
+router.get(
   '/status/:status', 
-  param('status').isIn(['EMPTY', 'LOW', 'MEDIUM', 'HIGH', 'FULL', 'MAINTENANCE', 'OUT_OF_SERVICE'])
+  param('status')
+    .isString()
+    .toUpperCase()
+    .isIn(['EMPTY', 'LOW', 'MEDIUM', 'HIGH', 'FULL', 'MAINTENANCE', 'OUT_OF_SERVICE'])
     .withMessage('Invalid bin status'),
   validateRequest,
   binController.getBinsByStatus
+);
+
+router.get(
+  '/nearby', 
+  nearbyBinsValidation, 
+  validateRequest, 
+  binController.getNearbyBins
 );
 
 router.get(

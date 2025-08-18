@@ -242,4 +242,23 @@ export class BinController {
       next(error);
     }
   }
+
+  /**
+   * Get bin status counts (total, full, empty, maintenance, etc.)
+   */
+  async getBinStatusCounts(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const userRole = req.user!.role;
+      const userId = req.user!.userId;
+
+      const result = await binService.getBinStatusCounts(userRole, userId);
+      
+      res.status(200).json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

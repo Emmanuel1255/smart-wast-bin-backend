@@ -500,6 +500,71 @@ export class BinService {
   }
 
   /**
+   * Get bin status counts (total, full, empty, maintenance, etc.)
+   */
+  async getBinStatusCounts(userRole: string, userId: string) {
+    try {
+      const whereClause: any = {};
+
+      // Users can only see their own bins
+      if (userRole === UserRole.USER) {
+        whereClause.userId = userId;
+      }
+
+      // Get counts grouped by status
+      const statusCounts = await prisma.bin.groupBy({
+        by: ['status'],
+        where: whereClause,
+        _count: true
+      });
+
+      // Initialize counts
+      const counts = {
+        total: 0,
+        full: 0,
+        empty: 0,
+        low: 0,
+        medium: 0,
+        high: 0,
+        maintenance: 0,
+        outOfService: 0
+      };
+
+      // Calculate total and individual status counts
+      statusCounts.forEach(item => {
+        counts.total += item._count;
+        switch (item.status) {
+          case BinStatus.FULL:
+            counts.full = item._count;
+            break;
+          case BinStatus.EMPTY:
+            counts.empty = item._count;
+            break;
+          case BinStatus.LOW:
+            counts.low = item._count;
+            break;
+          case BinStatus.MEDIUM:
+            counts.medium = item._count;
+            break;
+          case BinStatus.HIGH:
+            counts.high = item._count;
+            break;
+          case BinStatus.MAINTENANCE:
+            counts.maintenance = item._count;
+            break;
+          case BinStatus.OUT_OF_SERVICE:
+            counts.outOfService = item._count;
+            break;
+        }
+      });
+
+      return counts;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
    * Calculate bin status based on fill level
    */
   private calculateBinStatus(fillLevel: number): BinStatus {
